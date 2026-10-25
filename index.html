@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="green">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Glow - Arts Event System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* --- THEMES --- */
+        :root[data-theme="green"] {
+            --primary: #059669; --primary-hover: #047857; --primary-light: #D1FAE5;
+            --bg-page: #F9FAFB; --bg-white: #FFFFFF; --text-main: #111827; --text-muted: #4B5563; --border: #E5E7EB;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444; --danger-hover: #DC2626; --danger-light: #FEE2E2;
+        }
+        :root[data-theme="blue"] {
+            --primary: #2563EB; --primary-hover: #1D4ED8; --primary-light: #EFF6FF;
+            --bg-page: #F9FAFB; --bg-white: #FFFFFF; --text-main: #111827; --text-muted: #6B7280; --border: #E5E7EB;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444; --danger-hover: #DC2626; --danger-light: #FEE2E2;
+        }
+        :root[data-theme="dark"] {
+            --primary: #34D399; --primary-hover: #10B981; --primary-light: rgba(52, 211, 153, 0.15);
+            --bg-page: #111827; --bg-white: #1F2937; --text-main: #F9FAFB; --text-muted: #9CA3AF; --border: #374151;
+            --success: #10B981; --warning: #F59E0B; --danger: #F87171; --danger-hover: #EF4444; --danger-light: rgba(248, 113, 113, 0.2);
+        }
+        :root[data-theme="purple"] {
+            --primary: #8B5CF6; --primary-hover: #7C3AED; --primary-light: #EDE9FE;
+            --bg-page: #FAFAFA; --bg-white: #FFFFFF; --text-main: #111827; --text-muted: #6B7280; --border: #E5E7EB;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444; --danger-hover: #DC2626; --danger-light: #FEE2E2;
+        }
+        :root[data-theme="sunset"] {
+            --primary: #F97316; --primary-hover: #EA580C; --primary-light: #FFEDD5;
+            --bg-page: #FFFBEB; --bg-white: #FFFFFF; --text-main: #431407; --text-muted: #78350F; --border: #FDE68A;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444; --danger-hover: #DC2626; --danger-light: #FEE2E2;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-page); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; transition: background-color 0.4s ease, color 0.4s ease; }
+
+        /* --- TICKER --- */
+        .ticker-wrap { width: 100%; background: var(--text-main); color: var(--bg-white); padding: 0.5rem 0; overflow: hidden; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; }
+        .ticker { white-space: nowrap; animation: ticker 25s linear infinite; display: inline-block; padding-left: 100%; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        .ticker-item { display: inline-block; padding: 0 2rem; border-right: 1px solid rgba(255,255,255,0.2); }
+
+        /* --- NAVBAR --- */
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; background: var(--bg-white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; transition: background-color 0.4s ease, border-color 0.4s ease; }
+        .brand { display: flex; align-items: center; gap: 0.75rem; }
+        .brand-logo { width: 40px; height: 40px; background: var(--primary-light); border: 1px solid var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 800; font-size: 1.2rem; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); transition: all 0.4s ease; }
+        .brand-text h1 { font-size: 1.125rem; font-weight: 700; color: var(--text-main); line-height: 1.2; }
+        .brand-text p { font-size: 0.75rem; color: var(--text-muted); }
+        .nav-links { display: flex; gap: 0.2rem; flex-wrap: wrap; justify-content: center; }
+        .nav-links button { background: transparent; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: none; }
+        .nav-links button.visible { display: block; }
+        .nav-links button:hover { color: var(--text-main); }
+        .nav-links button.active { background: var(--primary-light); color: var(--primary); }
+        .auth-actions { display: flex; gap: 0.75rem; align-items: center; }
+        .user-greeting { font-size: 0.875rem; font-weight: 600; color: var(--primary); display: none; }
+        .btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); transition: all 0.2s; outline: none; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; text-decoration: none; }
+        .btn-outline { background: var(--bg-white); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg-page); border-color: var(--primary); color: var(--primary); }
+        .btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+        .btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+        .btn-danger:hover { background: var(--danger-hover); border-color: var(--danger-hover); }
+        .btn-small { padding: 0.35rem 0.75rem; font-size: 0.75rem; }
+        .icon-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.5rem; border-radius: 50%; transition: all 0.2s; }
+        .icon-btn:hover { background: var(--bg-page); color: var(--primary); }
+
+        /* --- SPA CONTAINER --- */
+        .view-section { display: none; flex: 1; }
+        .view-section.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .container { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+
+        /* --- UI COMPONENTS --- */
+        .hero-wrapper { background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-page) 100%); padding: 4rem 2rem 2rem 2rem; position: relative; overflow: hidden; transition: background 0.4s ease; }
+        .hero-content { max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
+        .eyebrow { font-size: 0.75rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; display: block; }
+        .hero-content h2 { font-size: 4rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.5rem; max-width: 800px; }
+        .hero-content p { font-size: 1.125rem; color: var(--text-muted); max-width: 600px; margin-bottom: 2rem; line-height: 1.6; }
+        .hero-actions { display: flex; gap: 1rem; align-items: center; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+        .stat-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .stat-icon { width: 48px; height: 48px; background: var(--primary-light); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .stat-info h4 { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+        .stat-info p { font-size: 0.875rem; color: var(--text-muted); }
+
+        .section-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;}
+        .section-header h3 { font-size: 2.25rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; color: var(--text-main); }
+        .section-header p { color: var(--text-muted); font-size: 1rem; }
+        
+        .search-bar { width: 100%; padding: 1rem 1rem 1rem 3rem; font-size: 1rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-white); color: var(--text-main); margin-bottom: 2rem; outline: none; }
+        .search-container { position: relative; }
+        .search-container svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        /* --- HOME --- */
+        .progress-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; margin-top: 3rem; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .progress-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
+        .progress-pct { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+        .progress-track { width: 100%; height: 1.5rem; background: var(--bg-page); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary) 0%, #60A5FA 100%); width: 0%; transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        .comments-section { background: var(--bg-white); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-top: 3rem; }
+        .comment-input-area { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .comment-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+        .comment-input-wrapper { flex: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+        .comment-input-wrapper textarea { width: 100%; min-height: 80px; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-page); color: var(--text-main); font-family: inherit; resize: vertical; outline: none; }
+        .comment-input-wrapper textarea:focus { border-color: var(--primary); background: var(--bg-white); }
+        
+        .comment-item { display: flex; gap: 1rem; animation: fadeIn 0.4s ease-out; border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
+        .comment-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .comment-content h5 { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .comment-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 400; }
+        .comment-text { font-size: 0.95rem; color: var(--text-main); line-height: 1.5; margin-bottom: 0.5rem; }
+        .cheer-btn { background: transparent; border: 1px solid var(--border); border-radius: 99px; padding: 0.2rem 0.6rem; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .cheer-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+        /* --- LEADERBOARD --- */
+        .podium-container { display: flex; justify-content: center; align-items: flex-end; gap: 1rem; height: 300px; margin-top: 3rem; margin-bottom: 3rem; }
+        .podium { display: flex; flex-direction: column; align-items: center; width: 120px; transition: height 1s ease; }
+        .podium-bar { width: 100%; background: var(--primary); border-radius: 8px 8px 0 0; display: flex; justify-content: center; padding-top: 1rem; font-size: 1.5rem; font-weight: 800; color: white; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }
+        .podium-1 { height: 250px; background: linear-gradient(180deg, #F59E0B 0%, #D97706 100%); z-index: 3; }
+        .podium-2 { height: 180px; background: linear-gradient(180deg, #9CA3AF 0%, #6B7280 100%); z-index: 2; }
+        .podium-3 { height: 130px; background: linear-gradient(180deg, #D97706 0%, #B45309 100%); z-index: 1; } /* Bronze */
+        .podium-dept { font-weight: 800; font-size: 1.25rem; margin-bottom: 0.5rem; text-align: center; }
+        .podium-pts { font-weight: 600; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; }
+        .leaderboard-list { background: var(--bg-white); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+
+        /* --- EVENTS & RESULTS --- */
+        .event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .event-card { background: var(--bg-white); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; transition: transform 0.3s; display: flex; flex-direction: column; }
+        .event-card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px -5px rgba(0,0,0,0.1); }
+        .event-tag { display: inline-block; padding: 0.25rem 0.75rem; background: var(--bg-page); border: 1px solid var(--border); border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-bottom: 1rem; align-self: flex-start; }
+        .event-status { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem; margin-left: 0.5rem; }
+        
+        .status-Upcoming { background: #E5E7EB; color: #4B5563; border: 1px solid #D1D5DB; }
+        .status-Ongoing { background: #FEF3C7; color: var(--warning); }
+        .status-Completed { background: #D1FAE5; color: var(--success); }
+        .status-Disqualified { background: #FEE2E2; color: #EF4444; border: 1px solid #FECACA; text-decoration: line-through; }
+        
+        .results-box { background: var(--bg-page); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.85rem; }
+        .results-box p { margin-bottom: 0.25rem !important; font-weight: 600; color: var(--text-main); }
+        
+        /* --- TIMELINE --- */
+        .timeline-day { margin-bottom: 3rem; }
+        .timeline-date { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 0.5rem; display: inline-block; }
+        .timeline-item { display: flex; gap: 1.5rem; margin-bottom: 1rem; background: var(--bg-white); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
+        .timeline-time { font-weight: 700; color: var(--text-main); min-width: 80px; }
+        .timeline-content h4 { font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main); display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem;}
+        .timeline-content p { font-size: 0.875rem; color: var(--text-muted); font-family: 'Inter', sans-serif; }
+
+        /* --- FORMS & TABLES --- */
+        .filter-bar { background: var(--bg-white); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .input-group { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; min-width: 200px;}
+        .input-group label { font-size: 0.875rem; font-weight: 600; color: var(--text-main); }
+        .input-group select, .input-group input { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.875rem; outline: none; background: var(--bg-page); color: var(--text-main); }
+        .input-group select:focus, .input-group input:focus { border-color: var(--primary); background: var(--bg-white); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: left; width: 100%; max-width: 650px; margin: 0 auto; background: var(--bg-white); padding: 2rem; border-radius: 12px; border: 1px solid var(--border); }
+        .form-full { grid-column: 1 / -1; }
+        
+        .locked-state { background: var(--bg-white); border: 1px dashed var(--border); border-radius: 12px; padding: 4rem 2rem; text-align: center; max-width: 650px; margin: 0 auto; }
+        .locked-state svg { width: 48px; height: 48px; color: var(--text-muted); margin-bottom: 1rem; opacity: 0.5; }
+        
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: rgba(0,0,0,0.03); padding: 1rem; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+        td { padding: 1rem; font-size: 0.875rem; border-bottom: 1px solid var(--border); color: var(--text-main); }
+        tr:last-child td { border-bottom: none; }
+        
+        .badge-waitlist { background: #FEF3C7; color: #D97706; padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.65rem; font-weight: 700; border: 1px solid #FDE68A; margin-left: 0.5rem;}
+        .badge-checked { background: #D1FAE5; color: #059669; padding: 0.15rem 0.5rem; border-radius: 99px; font-size: 0.65rem; font-weight: 700; border: 1px solid #A7F3D0; }
+
+        .team-accordion { background: var(--bg-white); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+        .team-summary { padding: 1.25rem; font-weight: 700; color: var(--text-main); cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+        .team-summary:hover { background: var(--bg-page); }
+        .team-summary::-webkit-details-marker { display: none; }
+        .team-content { border-top: 1px solid var(--border); padding: 0; background: var(--bg-page); }
+
+        /* --- CERTIFICATE PRINT STYLES --- */
+        @media print {
+            body * { visibility: hidden; }
+            #certPrintArea, #certPrintArea * { visibility: visible; }
+            #certPrintArea { position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 2rem; background: white !important; }
+            .modal-overlay { background: white !important; }
+        }
+        .cert-container { border: 10px double var(--primary); padding: 3rem; text-align: center; background: #fff; color: #111; }
+        .cert-container h1 { font-family: serif; font-size: 3rem; color: var(--primary); margin-bottom: 1rem;}
+        .cert-container h2 { font-size: 1.5rem; margin-bottom: 2rem; font-weight: 400;}
+        .cert-name { font-size: 2.5rem; font-weight: 700; border-bottom: 2px solid #333; display: inline-block; padding: 0 2rem; margin-bottom: 2rem;}
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s ease-out; }
+        .modal { background: var(--bg-white); padding: 2.5rem; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; color: var(--text-main); }
+        .modal-large { max-width: 800px; }
+        .modal h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+        .theme-btn { flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-page); color: var(--text-main); cursor: pointer; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .theme-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .theme-color-dot { width: 24px; height: 24px; border-radius: 50%; }
+        
+        .footer { margin-top: auto; border-top: 1px solid var(--border); padding: 2rem; display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); background: var(--bg-white); }
+    </style>
+</head>
+<body>
+
+    <!-- ANNOUNCEMENT TICKER -->
+    <div class="ticker-wrap" id="tickerWrap">
+        <div class="ticker" id="tickerContent">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="brand">
+            <div class="brand-logo">A</div>
+            <div class="brand-text">
+                <h1>Academic Glow</h1>
+                <p>Arts Event System</p>
+            </div>
+        </div>
+        <div class="nav-links" id="navMenu">
+            <!-- Visibility controlled by auth state -->
+            <button data-target="home" class="active visible" onclick="navigate('home')">Home</button>
+            <button data-target="catalogue" class="visible" onclick="navigate('catalogue')">Catalogue</button>
+            <button data-target="schedule" class="visible" onclick="navigate('schedule')">Schedule</button>
+            <button data-target="leaderboard" class="visible" onclick="navigate('leaderboard')">Leaderboard</button>
+            
+            <!-- Student/Admin Links -->
+            <button data-target="dashboard" class="req-student" onclick="navigate('dashboard')">My Dashboard</button>
+            <button data-target="registration" class="req-reg" onclick="navigate('registration')">Registration</button>
+            
+            <!-- Admin Links -->
+            <button data-target="participants" class="req-admin" onclick="navigate('participants')">Management</button>
+            
+            <!-- Judge Links -->
+            <button data-target="scoring" class="req-judge" onclick="navigate('scoring')">Scoring Panel</button>
+        </div>
+        <div class="auth-actions">
+            <span id="userGreeting" class="user-greeting"></span>
+            <button id="logoutBtn" class="btn btn-outline" style="display: none;" onclick="logout()">Logout</button>
+            <button id="loginBtn" class="btn btn-primary" onclick="openModal('loginModal')">Login</button>
+            <button class="icon-btn" onclick="openModal('settingsModal')" title="Settings">
+                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- VIEW: HOME -->
+    <div id="view-home" class="view-section active">
+        <div class="hero-wrapper">
+            <div class="hero-content">
+                <span class="eyebrow">Arts Festival 2026</span>
+                <h2>A campus full of ideas, waiting to take shape.</h2>
+                <p>Welcome to the central hub for the college arts festival. Explore events, check schedules, form teams, and join the conversation.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary btn-large" onclick="navigate('catalogue')">Explore events</button>
+                    <button class="btn btn-outline btn-large" onclick="navigate('leaderboard')">Live Leaderboard</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container" style="padding-top: 2rem;">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>
+                    <div class="stat-info"><h4 id="stat-events">0</h4><p>Active Events</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg></div>
+                    <div class="stat-info"><h4 id="stat-regs">0</h4><p>Total Registrations</p></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg></div>
+                    <div class="stat-info"><h4 id="stat-comments">0</h4><p>Community Comments</p></div>
+                </div>
+            </div>
+
+            <div class="progress-card">
+                <div class="progress-header">
+                    <h4 class="progress-title">Festival Completion Progress</h4>
+                    <span id="progressText" class="progress-pct">0%</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem;" id="progressSubtext">0 of 0 events completed.</p>
+                <div class="progress-track">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- YouTube Style Comments Section -->
+            <div class="comments-section">
+                <div class="section-header" style="margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 1.5rem;">Community Discussion</h3>
+                        <p>Share your thoughts, coordinate practices, or cheer for your friends.</p>
+                    </div>
+                </div>
+                
+                <div class="comment-input-area">
+                    <div class="comment-avatar" id="activeUserAvatar">?</div>
+                    <div class="comment-input-wrapper">
+                        <textarea id="commentInput" placeholder="Log in to add a comment..." disabled></textarea>
+                        <button id="postCommentBtn" class="btn btn-primary" style="opacity: 0.6; cursor: not-allowed;" onclick="postComment()">Comment</button>
+                    </div>
+                </div>
+                
+                <div id="commentList" class="comment-list">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- VIEW: CATALOGUE -->
+    <div id="view-catalogue" class="view-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <span class="eyebrow">Discover the programme</span>
+                    <h3>Event Catalogue</h3>
+                    <p>Find a place to perform, create, learn or simply be part of the audience.</p>
+                </div>
+                <button id="addEventBtn" class="btn btn-primary" style="display:none;" onclick="openAddEventModal()">+ Add New Event</button>
+            </div>
+            <div class="search-container" style="margin-bottom: 2rem;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" class="search-bar" id="catSearch" placeholder="Search by event, category or activity" onkeyup="filterEvents('catSearch', 'catGrid')" style="margin-bottom:0;">
+            </div>
+            <div id="catGrid" class="event-grid"></div>
+        </div>
+    </div>
+
+    <!-- VIEW: SCHEDULE -->
+    <div id="view-schedule" class="view-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <span class="eyebrow">Plan your campus day</span>
+                    <h3>Schedule</h3>
+                    <p>A chronological view of the programme.</p>
+                </div>
+            </div>
+            <div id="timelineContainer"></div>
+        </div>
+    </div>
+
+    <!-- VIEW: LEADERBOARD -->
+    <div id="view-leaderboard" class="view-section">
+        <div class="container">
+            <div class="section-header" style="text-align:center; justify-content:center; flex-direction:column; align-items:center;">
+                <span class="eyebrow">The Race to the Top</span>
+                <h3>Department Leaderboard</h3>
+                <p>Live points tallied from completed events. 1st: 10pts, 2nd: 5pts, 3rd: 3pts.</p>
+            </div>
+            
+            <div class="podium-container" id="podiumContainer">
+                <!-- Populated via JS -->
+            </div>
+
+            <div class="form-grid" style="max-width: 800px; padding:0;">
+                <table id="leaderboardTable" style="border-radius:12px;">
+                    <thead><tr><th>Rank</th><th>Department</th><th style="text-align:right;">Total Points</th></tr></thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW: STUDENT DASHBOARD -->
+    <div id="view-dashboard" class="view-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <span class="eyebrow">My Profile</span>
+                    <h3 id="dashTitle">My Dashboard</h3>
+                    <p>Track your registered events, timings, and download certificates.</p>
+                </div>
+                <button class="btn btn-primary" onclick="navigate('registration')">+ Register for more</button>
+            </div>
+            <div id="dashContainer">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW: REGISTRATION -->
+    <div id="view-registration" class="view-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <span class="eyebrow">Join the programme</span>
+                    <h3>Participant Registration</h3>
+                    <p>Secure your spot. Check event capacities.</p>
+                </div>
+            </div>
+            
+            <div id="regLockedState" class="locked-state">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                <h3 style="font-size:1.5rem; font-weight:700; margin-bottom:0.5rem; color:var(--text-main);">Authentication Required</h3>
+                <p style="color:var(--text-muted); margin-bottom:1.5rem;">You must be logged in as a student to register.</p>
+                <button class="btn btn-primary" onclick="openModal('loginModal')">Log In Now</button>
+            </div>
+
+            <form id="regForm" onsubmit="submitRegistration(event)" class="form-grid" style="display:none;">
+                <div class="input-group form-full">
+                    <label>Select Event</label>
+                    <select id="regEventId" required><option value="">Choose an event...</option></select>
+                </div>
+                <div class="input-group form-full" style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 0.5rem;">
+                    <label>Team Name / Group Identifier</label>
+                    <input type="text" id="regTeam" placeholder="e.g. Spartans, Team 1, or Solo" required>
+                    <span style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">Capacities are calculated by Team. Ensure identical spelling for group members.</span>
+                </div>
+                <div class="input-group">
+                    <label>Full Name</label><input type="text" id="regName" placeholder="e.g. Arjun M" required>
+                </div>
+                <div class="input-group">
+                    <label>Roll Number</label><input type="text" id="regNo" placeholder="e.g. 45" required>
+                </div>
+                <div class="input-group">
+                    <label>Department</label>
+                    <select id="regDept" required>
+                        <option value="">Select Department...</option>
+                        <option value="CSE">CSE</option><option value="ECE">ECE</option>
+                        <option value="EEE">EEE</option><option value="MECH">MECH</option>
+                        <option value="CIVIL">CIVIL</option><option value="RAI">RAI</option><option value="IT">IT</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Semester</label>
+                    <select id="regSem" required>
+                        <option value="">Select Semester...</option>
+                        <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="S4">S4</option>
+                        <option value="S5">S5</option><option value="S6">S6</option><option value="S7">S7</option><option value="S8">S8</option>
+                    </select>
+                </div>
+                <div class="form-full" style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">Submit Registration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW: MANAGEMENT (ADMIN) -->
+    <div id="view-participants" class="view-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <span class="eyebrow">Organiser Tools</span>
+                    <h3>Participant Management</h3>
+                    <p>Manage teams, check-in students, and export CSVs.</p>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="input-group">
+                    <label>Select event</label>
+                    <select id="partEventSelect" onchange="renderParticipantTable()"><option value="">Choose an event</option></select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap:wrap;">
+                    <span class="meta-text" id="partCountLabel" style="font-weight: 600;">0 participants</span>
+                    <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+                    <button class="btn btn-primary" onclick="renderParticipantTable()">Refresh list</button>
+                </div>
+            </div>
+
+            <div id="teamAccordionContainer"></div>
+        </div>
+    </div>
+
+    <!-- VIEW: SCORING (JUDGE) -->
+    <div id="view-scoring" class="view-section">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <span class="eyebrow">Judge Panel</span>
+                    <h3>Event Scoring</h3>
+                    <p>Input scores for teams in ongoing or completed events.</p>
+                </div>
+            </div>
+
+            <div class="filter-bar">
+                <div class="input-group">
+                    <label>Select event to score</label>
+                    <select id="scoreEventSelect" onchange="renderScoringTable()"><option value="">Choose an event</option></select>
+                </div>
+            </div>
+
+            <div class="form-grid" style="max-width:800px; padding:0;">
+                <table id="scoringTable" style="display:none;">
+                    <thead><tr><th>Team Name</th><th>Members</th><th style="width:150px;">Score (1-100)</th><th style="text-align:right;">Save</th></tr></thead>
+                    <tbody id="scoringTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <div><strong>Academic Glow</strong> · Arts Event System</div>
+        <div>A campus programme for making, performing and sharing.</div>
+    </div>
+
+    <!-- --- ALL MODALS --- -->
+
+    <!-- SETTINGS MODAL -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal">
+            <h3>App Settings</h3>
+            
+            <!-- Dynamic Ticker Control (Admin Only) -->
+            <div id="adminTickerControl" class="settings-section" style="display:none;">
+                <label style="font-weight:700; margin-bottom:0.5rem; display:block; color:var(--primary);">Admin: Update Ticker</label>
+                <div style="display:flex; gap:0.5rem;">
+                    <input type="text" id="newAnnouncement" placeholder="Add urgent announcement..." style="flex:1; padding:0.5rem; border:1px solid var(--border); border-radius:8px; background:var(--bg-page); color:var(--text-main);">
+                    <button class="btn btn-primary btn-small" onclick="addAnnouncement()">Add</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <label style="font-weight:700; margin-bottom:1rem; display:block;">Theme Color</label>
+                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button class="theme-btn active" id="themeBtn-green" onclick="changeTheme('green')"><div class="theme-color-dot" style="background:#059669;"></div>Green</button>
+                    <button class="theme-btn" id="themeBtn-blue" onclick="changeTheme('blue')"><div class="theme-color-dot" style="background:#2563EB;"></div>Blue</button>
+                    <button class="theme-btn" id="themeBtn-dark" onclick="changeTheme('dark')"><div class="theme-color-dot" style="background:#1F2937; border:1px solid #4B5563;"></div>Dark</button>
+                    <button class="theme-btn" id="themeBtn-purple" onclick="changeTheme('purple')"><div class="theme-color-dot" style="background:#8B5CF6;"></div>Purple</button>
+                    <button class="theme-btn" id="themeBtn-sunset" onclick="changeTheme('sunset')"><div class="theme-color-dot" style="background:#F97316;"></div>Sunset</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <label style="font-weight:700; margin-bottom:0.5rem; display:block;">About Academic Glow</label>
+                <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">Version 4.0.0<br>Built specifically for college arts festivals to manage registrations, teams, schedules, and real-time community engagement seamlessly without heavy dependencies.</p>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top:1rem;">
+                <button type="button" class="btn btn-primary" onclick="closeModal('settingsModal')">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Login</h3>
+            <form onsubmit="submitLogin(event)">
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>Username</label>
+                    <input type="text" id="loginId" placeholder="Enter username" required>
+                </div>
+                <div class="input-group" style="margin-bottom: 2rem;">
+                    <label>Password</label>
+                    <input type="password" id="loginPass" placeholder="Enter password" required>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('loginModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT PARTICIPANT MODAL -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Edit Participant Details</h3>
+            <form id="editForm" onsubmit="submitEditParticipant(event)">
+                <input type="hidden" id="editPartId">
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>Full Name</label><input type="text" id="editName" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="input-group"><label>Roll Number</label><input type="text" id="editRegNo" required></div>
+                    <div class="input-group">
+                        <label>Department</label>
+                        <select id="editDept" required>
+                            <option value="CSE">CSE</option><option value="ECE">ECE</option>
+                            <option value="EEE">EEE</option><option value="MECH">MECH</option>
+                            <option value="CIVIL">CIVIL</option><option value="RAI">RAI</option><option value="IT">IT</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top:2rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADD/EDIT EVENT MODAL (Admin) -->
+    <div id="eventModal" class="modal-overlay">
+        <div class="modal modal-large">
+            <h3 id="eventModalTitle">Add/Edit Event</h3>
+            <form id="eventForm" onsubmit="submitEvent(event)">
+                <input type="hidden" id="eventModId">
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>Event Name</label>
+                    <input type="text" id="eventModName" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="input-group"><label>Category</label><input type="text" id="eventModCat" required></div>
+                    <div class="input-group"><label>Max Teams (Capacity)</label><input type="number" id="eventModCap" min="1" required></div>
+                    <div class="input-group">
+                        <label>Status</label>
+                        <select id="eventModStatus" required>
+                            <option value="Upcoming">Upcoming</option>
+                            <option value="Ongoing">Ongoing</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Disqualified">Disqualified</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="input-group"><label>Date (YYYY-MM-DD)</label><input type="date" id="eventModDate" required></div>
+                    <div class="input-group"><label>Time (HH:MM)</label><input type="time" id="eventModTime" required></div>
+                </div>
+                <div class="input-group" style="margin-bottom: 2rem;"><label>Venue</label><input type="text" id="eventModVenue" required></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" id="eventDeleteBtn" class="btn btn-danger" style="display:none;" onclick="disqualifyEvent()">Disqualify Event</button>
+                    <div style="display: flex; gap: 1rem; margin-left: auto;">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('eventModal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Event</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MANAGE RESULTS MODAL (Admin) -->
+    <div id="resultsModal" class="modal-overlay">
+        <div class="modal">
+            <h3>Set Winners</h3>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1.5rem;">Select the winning teams. This will automatically update the Live Department Leaderboard.</p>
+            <form onsubmit="submitResults(event)">
+                <input type="hidden" id="resEventId">
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>🥇 1st Place (10 pts)</label>
+                    <select id="res1" required><option value="">Select Team</option></select>
+                </div>
+                <div class="input-group" style="margin-bottom: 1rem;">
+                    <label>🥈 2nd Place (5 pts)</label>
+                    <select id="res2"><option value="">Select Team (Optional)</option></select>
+                </div>
+                <div class="input-group" style="margin-bottom: 2rem;">
+                    <label>🥉 3rd Place (3 pts)</label>
+                    <select id="res3"><option value="">Select Team (Optional)</option></select>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('resultsModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Publish Results</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- GALLERY MODAL (Mock) -->
+    <div id="galleryModal" class="modal-overlay">
+        <div class="modal modal-large">
+            <h3>Event Gallery</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+                <div style="background:#E5E7EB; height:200px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#9CA3AF;">[Image 1]</div>
+                <div style="background:#E5E7EB; height:200px; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#9CA3AF;">[Image 2]</div>
+            </div>
+            <button class="btn btn-outline" style="width:100%;" onclick="closeModal('galleryModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- CERTIFICATE PRINT MODAL -->
+    <div id="certModal" class="modal-overlay">
+        <div class="modal modal-large" style="background:var(--bg-page);">
+            <div id="certPrintArea" class="cert-container">
+                <h1>Certificate of Participation</h1>
+                <h2>This is proudly presented to</h2>
+                <div class="cert-name" id="certStudentName">Student Name</div>
+                <h2 style="margin-top:2rem;">for successful participation in</h2>
+                <h2 style="font-weight:700; color:var(--text-main);" id="certEventName">Event Name</h2>
+                <p style="margin-top:3rem; font-size:1rem; color:#666;">Academic Glow Arts Festival 2026</p>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top:2rem;" class="no-print">
+                <button class="btn btn-outline" onclick="closeModal('certModal')">Close</button>
+                <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUTH & THEME STATE ---
+        let currentUserRole = null; 
+        let currentUserName = null;
+        let myStudentId = null; 
+        let currentTheme = 'green';
+
+        // --- IN-MEMORY DATA STORE & GENERATOR ---
+        const db = {
+            announcements: [
+                "Welcome to Academic Glow Arts Festival 2026!",
+                "Drama venue has been relocated to the Main Stage."
+            ],
+            events: [
+                { id: 1, name: 'Oppana', category: 'Dance', capacity: 5, date: '2026-11-10', time: '09:00', venue: 'Main Stage', status: 'Completed', results: {first: 'Team A', second: 'Team B', third: ''} },
+                { id: 2, name: 'Kolkali', category: 'Dance', capacity: 5, date: '2026-11-10', time: '11:00', venue: 'Main Stage', status: 'Completed', results: {first: 'Team C', second: 'Team A', third: 'Team B'} },
+                { id: 7, name: 'Margamkali', category: 'Dance', capacity: 8, date: '2026-11-10', time: '12:30', venue: 'Main Stage', status: 'Ongoing', results: null },
+                { id: 3, name: 'Vattapat', category: 'Dance', capacity: 6, date: '2026-11-10', time: '14:00', venue: 'Auditorium', status: 'Upcoming', results: null },
+                { id: 8, name: 'Bharatanatyam', category: 'Dance', capacity: 10, date: '2026-11-10', time: '15:30', venue: 'Auditorium', status: 'Upcoming', results: null },
+                { id: 4, name: 'Group Song Girls', category: 'Music', capacity: 4, date: '2026-11-11', time: '09:30', venue: 'Seminar Hall', status: 'Upcoming', results: null },
+                { id: 5, name: 'Group Song Boys', category: 'Music', capacity: 4, date: '2026-11-11', time: '11:30', venue: 'Seminar Hall', status: 'Upcoming', results: null },
+                { id: 9, name: 'Mappilappattu', category: 'Music', capacity: 15, date: '2026-11-11', time: '14:00', venue: 'Seminar Hall', status: 'Upcoming', results: null },
+                { id: 6, name: 'Drama', category: 'Theatre', capacity: 5, date: '2026-11-11', time: '15:00', venue: 'Open Air Theatre', status: 'Upcoming', results: null },
+                { id: 10, name: 'Mimicry', category: 'Theatre', capacity: 20, date: '2026-11-12', time: '10:00', venue: 'Open Air Theatre', status: 'Upcoming', results: null },
+                { id: 11, name: 'Duffmuttu', category: 'Dance', capacity: 5, date: '2026-11-12', time: '11:30', venue: 'Main Stage', status: 'Upcoming', results: null },
+                { id: 12, name: 'Thiruvathira', category: 'Dance', capacity: 5, date: '2026-11-12', time: '16:00', venue: 'Main Stage', status: 'Upcoming', results: null }
+            ],
+            participants: [],
+            registrations: [],
+            comments: [
+                { id: 1, author: "Aysha K", time: "2 hours ago", text: "The organization of the dance events this year is phenomenal!", cheers: 12 },
+                { id: 2, author: "Arjun M", time: "5 hours ago", text: "Registering my team was completely seamless. Schedule visibility is great.", cheers: 8 },
+                { id: 3, author: "Sneha P", time: "1 day ago", text: "As a spectator, being able to see exactly when the Drama club is performing is great.", cheers: 24 }
+            ]
+        };
+
+        // GENERATE DATA WITH REALISTIC NAMES
+        (function generateDummyData() {
+            const fNames = ["Arjun", "Aysha", "Rahul", "Safa", "Vishnu", "Meenakshi", "Karthik", "Neha", "Musab", "Sneha", "Gokul", "Anjali", "Sheez", "Kavya", "Rohit", "Amina", "Nihal", "Pooja", "Sanjay", "Swati"];
+            const lNames = ["M", "K", "S", "R", "V", "P", "T", "N"];
+            const depts = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "RAI", "IT"];
+            
+            for(let i=1; i<=150; i++) {
+                db.participants.push({
+                    id: i, 
+                    name: fNames[Math.floor(Math.random()*fNames.length)] + " " + lNames[Math.floor(Math.random()*lNames.length)],
+                    registerNumber: (1000 + i).toString(), 
+                    department: depts[Math.floor(Math.random()*depts.length)],
+                    semester: "S" + (Math.floor(Math.random()*8)+1), 
+                    isNew: false
+                });
+            }
+
+            db.events.forEach(ev => {
+                const numTeams = Math.floor(Math.random() * 3) + 2; 
+                let shuffled = [...db.participants].sort(() => 0.5 - Math.random());
+                let pIndex = 0;
+                
+                for(let t=1; t<=numTeams; t++) {
+                    const teamSize = Math.floor(Math.random() * 4) + 4; 
+                    const teamName = `Team ${String.fromCharCode(64 + t)}`; 
+                    for(let s=0; s<teamSize; s++) {
+                        if(pIndex < shuffled.length) {
+                            db.registrations.push({
+                                eventId: ev.id, participantId: shuffled[pIndex].id, team: teamName, 
+                                disqualified: false, checkedIn: false, score: null, waitlist: false
+                            });
+                            pIndex++;
+                        }
+                    }
+                }
+            });
+
+            // GUARANTEE student 1 has at least 1 registration for the dashboard demo to always work properly.
+            const s1 = db.participants.find(p => p.id === 1);
+            if(s1 && db.registrations.filter(r => r.participantId === 1).length === 0) {
+                db.registrations.push({
+                    eventId: 1, participantId: 1, team: "Team A", 
+                    disqualified: false, checkedIn: false, score: null, waitlist: false
+                });
+            }
+        })();
+
+        // --- TICKER LOGIC ---
+        function updateTicker() {
+            const container = document.getElementById('tickerContent');
+            let html = '';
+            db.announcements.forEach(a => html += `<div class="ticker-item">📢 ${a}</div>`);
+            container.innerHTML = html + html; 
+        }
+        function addAnnouncement() {
+            const val = document.getElementById('newAnnouncement').value.trim();
+            if(val) { db.announcements.push(val); updateTicker(); document.getElementById('newAnnouncement').value = ''; alert("Announcement live!"); }
+        }
+
+        // --- APP NAVIGATION & UI ---
+        function changeTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('themeBtn-' + themeName).classList.add('active');
+            currentTheme = themeName;
+        }
+
+        function navigate(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            
+            document.querySelectorAll('#navMenu button').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.dataset.target === viewId) btn.classList.add('active');
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            updateUI();
+            if(viewId === 'home') { renderComments(); updateProgressBar(); }
+            if(viewId === 'participants') renderParticipantTable();
+            if(viewId === 'scoring') { updateScoringDropdown(); renderScoringTable(); }
+            if(viewId === 'dashboard') renderStudentDashboard();
+            if(viewId === 'leaderboard') renderLeaderboard();
+        }
+
+        function getParticipantCount(eventId) {
+            return db.registrations.filter(r => r.eventId === parseInt(eventId) && !r.disqualified).length;
+        }
+
+        function updateUI() {
+            document.getElementById('stat-events').innerText = db.events.filter(e => e.status !== 'Disqualified').length;
+            document.getElementById('stat-regs').innerText = db.registrations.filter(r => !r.disqualified).length;
+            document.getElementById('stat-comments').innerText = db.comments.length;
+            
+            renderGrid(db.events, 'catGrid');
+            renderTimeline();
+            updateProgressBar();
+
+            document.querySelectorAll('.req-student, .req-reg, .req-admin, .req-judge').forEach(el => el.classList.remove('visible'));
+            
+            if(currentUserRole === 'student') {
+                document.querySelectorAll('.req-student, .req-reg').forEach(el => el.classList.add('visible'));
+                document.getElementById('adminTickerControl').style.display = 'none';
+            } else if(currentUserRole === 'admin') {
+                document.querySelectorAll('.req-reg, .req-admin').forEach(el => el.classList.add('visible'));
+                document.getElementById('adminTickerControl').style.display = 'block';
+            } else if(currentUserRole === 'judge') {
+                document.querySelectorAll('.req-judge').forEach(el => el.classList.add('visible'));
+                document.getElementById('adminTickerControl').style.display = 'none';
+            } else {
+                document.getElementById('adminTickerControl').style.display = 'none';
+            }
+
+            const regForm = document.getElementById('regForm');
+            const regLock = document.getElementById('regLockedState');
+            if(currentUserRole === 'student' || currentUserRole === 'admin') {
+                regForm.style.display = 'grid'; regLock.style.display = 'none';
+            } else {
+                regForm.style.display = 'none'; regLock.style.display = 'block';
+            }
+
+            const commentInput = document.getElementById('commentInput');
+            const postBtn = document.getElementById('postCommentBtn');
+            const avatar = document.getElementById('activeUserAvatar');
+            if(currentUserRole) {
+                commentInput.disabled = false; commentInput.placeholder = "Add a comment...";
+                postBtn.style.opacity = "1"; postBtn.style.cursor = "pointer";
+                avatar.innerText = currentUserName.charAt(0).toUpperCase();
+            } else {
+                commentInput.disabled = true; commentInput.placeholder = "Log in to add a comment...";
+                postBtn.style.opacity = "0.6"; postBtn.style.cursor = "not-allowed";
+                avatar.innerText = "?";
+            }
+
+            let options = '<option value="">Choose an event...</option>';
+            db.events.forEach(e => {
+                const label = e.status === 'Disqualified' ? `${e.name} (Disqualified)` : `${e.name} (${e.category}) - Cap: ${e.capacity}`;
+                options += `<option value="${e.id}">${label}</option>`;
+            });
+            document.getElementById('regEventId').innerHTML = options;
+            
+            const partSelect = document.getElementById('partEventSelect');
+            const currentPartVal = partSelect.value;
+            partSelect.innerHTML = options;
+            if(currentPartVal && db.events.find(e => e.id == currentPartVal)) {
+                partSelect.value = currentPartVal;
+            } else {
+                partSelect.value = "";
+            }
+
+            document.getElementById('addEventBtn').style.display = (currentUserRole === 'admin') ? 'inline-flex' : 'none';
+        }
+
+        // --- DASHBOARD (STUDENT) ---
+        function renderStudentDashboard() {
+            const container = document.getElementById('dashContainer');
+            if(currentUserRole !== 'student' || !myStudentId) { container.innerHTML = '<p>Error loading dashboard.</p>'; return; }
+
+            const myRegs = db.registrations.filter(r => r.participantId === myStudentId);
+            if(myRegs.length === 0) {
+                container.innerHTML = '<div class="locked-state"><h3>No events found.</h3><p>You haven\'t registered for anything yet.</p></div>';
+                return;
+            }
+
+            let html = '<div class="event-grid">';
+            myRegs.forEach(reg => {
+                const ev = db.events.find(e => e.id === reg.eventId);
+                const badge = reg.waitlist ? `<span class="badge-waitlist">Waitlisted</span>` : '';
+                const certBtn = (ev.status === 'Completed' && !reg.disqualified && !reg.waitlist) 
+                    ? `<button class="btn btn-outline btn-small" onclick="showCertificate('${ev.name.replace(/'/g, "\\'")}')">Download Certificate</button>` : '';
+
+                html += `
+                    <div class="event-card" style="${reg.disqualified ? 'opacity:0.6' : ''}">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                            <span class="event-status status-${ev.status}" style="margin:0;">${ev.status}</span>
+                            ${badge}
+                        </div>
+                        <h4>${ev.name}</h4>
+                        <p>Team: <strong>${reg.team}</strong></p>
+                        <p>${ev.date} · ${ev.time}</p>
+                        <p>${ev.venue}</p>
+                        <div style="margin-top:auto; padding-top:1rem; text-align:right;">${certBtn}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html + '</div>';
+        }
+
+        function showCertificate(eventName) {
+            const student = db.participants.find(p => p.id === myStudentId);
+            document.getElementById('certStudentName').innerText = student.name;
+            document.getElementById('certEventName').innerText = eventName;
+            openModal('certModal');
+        }
+
+        // --- LEADERBOARD ---
+        function renderLeaderboard() {
+            const deptScores = {};
+            db.events.forEach(ev => {
+                if(ev.status === 'Completed' && ev.results && ev.results.first) {
+                    const awardPoints = (teamName, pts) => {
+                        if(!teamName) return;
+                        const members = db.registrations.filter(r => r.eventId === ev.id && r.team === teamName);
+                        members.forEach(m => {
+                            const p = db.participants.find(x => x.id === m.participantId);
+                            if(p) deptScores[p.department] = (deptScores[p.department] || 0) + pts;
+                        });
+                    };
+                    awardPoints(ev.results.first, 10);
+                    awardPoints(ev.results.second, 5);
+                    awardPoints(ev.results.third, 3);
+                }
+            });
+
+            const sorted = Object.entries(deptScores).sort((a,b) => b[1] - a[1]);
+            
+            const pCont = document.getElementById('podiumContainer');
+            if(sorted.length >= 3) {
+                pCont.innerHTML = `
+                    <div class="podium"><div class="podium-dept">${sorted[1][0]}</div><div class="podium-pts">${sorted[1][1]} pts</div><div class="podium-bar podium-2">2</div></div>
+                    <div class="podium"><div class="podium-dept">${sorted[0][0]}</div><div class="podium-pts">${sorted[0][1]} pts</div><div class="podium-bar podium-1">1</div></div>
+                    <div class="podium"><div class="podium-dept">${sorted[2][0]}</div><div class="podium-pts">${sorted[2][1]} pts</div><div class="podium-bar podium-3">3</div></div>
+                `;
+            } else {
+                pCont.innerHTML = '<p style="color:var(--text-muted); padding:3rem;">Not enough data for podium yet.</p>';
+            }
+
+            const tbody = document.getElementById('leaderboardBody');
+            tbody.innerHTML = '';
+            sorted.forEach((item, idx) => {
+                tbody.innerHTML += `<tr>
+                    <td style="font-weight:700;">#${idx+1}</td>
+                    <td style="font-weight:600; color:var(--text-main);">${item[0]}</td>
+                    <td style="text-align:right; font-weight:700; color:var(--primary);">${item[1]}</td>
+                </tr>`;
+            });
+        }
+
+        // --- COMMENTS ---
+        function updateProgressBar() {
+            const valid = db.events.filter(e => e.status !== 'Disqualified');
+            const total = valid.length;
+            const completed = valid.filter(e => e.status === 'Completed').length;
+            const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressText').innerText = percent + '%';
+            document.getElementById('progressSubtext').innerText = `${completed} out of ${total} active events completed.`;
+        }
+
+        function renderComments() {
+            const container = document.getElementById('commentList');
+            container.innerHTML = '';
+            [...db.comments].reverse().forEach(c => {
+                container.innerHTML += `
+                    <div class="comment-item">
+                        <div class="comment-avatar">${c.author.charAt(0).toUpperCase()}</div>
+                        <div class="comment-content" style="flex:1;">
+                            <h5>${c.author} <span class="comment-date">${c.time}</span></h5>
+                            <p class="comment-text">${c.text}</p>
+                            <button class="cheer-btn" onclick="cheerComment(${c.id})">👏 Cheer (${c.cheers || 0})</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+        function cheerComment(id) {
+            const c = db.comments.find(x => x.id === id);
+            if(c) { c.cheers = (c.cheers || 0) + 1; renderComments(); }
+        }
+        function postComment() {
+            if(!currentUserRole) return;
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if(text) {
+                db.comments.push({ id: db.comments.length + 1, author: currentUserName, time: "Just now", text: text, cheers: 0 });
+                input.value = '';
+                updateUI(); renderComments();
+            }
+        }
+
+        // --- GRIDS & SCHEDULE ---
+        function renderGrid(events, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            if(events.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted); grid-column:1/-1;">No events found.</p>';
+                return;
+            }
+
+            events.forEach(ev => {
+                const teamCount = new Set(db.registrations.filter(r => r.eventId === ev.id && !r.disqualified).map(r => r.team)).size;
+                const isFull = teamCount >= ev.capacity;
+                const capBadge = isFull ? `<span style="color:var(--danger); font-size:0.75rem; font-weight:700;">(FULL)</span>` : `<span style="font-size:0.75rem; color:var(--text-muted);">(${teamCount}/${ev.capacity} Teams)</span>`;
+                
+                let adminEditBtn = ''; let resultsBox = '';
+                if(currentUserRole === 'admin') {
+                    adminEditBtn = `<button class="btn btn-outline btn-small" onclick="openEditEvent(${ev.id})">Edit Event</button>`;
+                    if(ev.status === 'Completed') adminEditBtn += `<button class="btn btn-primary btn-small" onclick="openResultsModal(${ev.id})">Manage Results</button>`;
+                }
+
+                if(ev.status === 'Completed' && ev.results && ev.results.first) {
+                    resultsBox = `
+                        <div class="results-box">
+                            <p>🥇 ${ev.results.first}</p>
+                            ${ev.results.second ? `<p>🥈 ${ev.results.second}</p>` : ''}
+                            ${ev.results.third ? `<p>🥉 ${ev.results.third}</p>` : ''}
+                        </div>
+                        <button class="btn btn-outline btn-small" style="width:100%; margin-top:0.5rem;" onclick="openModal('galleryModal')">View Event Gallery</button>
+                    `;
+                }
+
+                const strike = ev.status === 'Disqualified' ? 'text-decoration: line-through; color: var(--text-muted);' : '';
+
+                container.innerHTML += `
+                    <div class="event-card">
+                        <div style="display:flex; align-items:center;">
+                            <span class="event-tag">${ev.category}</span>
+                            <span class="event-status status-${ev.status}">${ev.status}</span>
+                        </div>
+                        <h4 style="${strike}">${ev.name} ${capBadge}</h4>
+                        <p style="display:flex; align-items:center; gap:0.5rem; color:var(--text-muted);"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg> ${ev.date} · ${ev.time}</p>
+                        <p style="display:flex; align-items:center; gap:0.5rem; color:var(--text-muted);"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg> ${ev.venue}</p>
+                        ${resultsBox}
+                        <div style="margin-top:auto; padding-top:1rem; border-top:1px solid var(--border); font-size:0.875rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">${adminEditBtn}</div>
+                            <a href="#" style="color:var(--primary); font-weight:600; text-decoration:none;" onclick="event.preventDefault(); document.getElementById('partEventSelect').value='${ev.id}'; navigate('participants');">View Teams →</a>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = '';
+            
+            const grouped = db.events.reduce((acc, ev) => { (acc[ev.date] = acc[ev.date] || []).push(ev); return acc; }, {});
+            Object.keys(grouped).sort().forEach(date => {
+                let dayHtml = `<div class="timeline-day"><div class="timeline-date">${new Date(date).toLocaleDateString('en-GB', {weekday: 'long', day: 'numeric', month: 'long'})}</div>`;
+                grouped[date].sort((a, b) => a.time.localeCompare(b.time)).forEach(ev => {
+                    const strike = ev.status === 'Disqualified' ? 'text-decoration: line-through; opacity: 0.7;' : '';
+                    dayHtml += `
+                        <div class="timeline-item">
+                            <div class="timeline-time" style="padding-top:0.2rem;">${ev.time}</div>
+                            <div class="timeline-content">
+                                <h4 style="${strike}; display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem;">${ev.name} 
+                                    <span class="event-tag" style="margin:0; padding:0.15rem 0.5rem;">${ev.category}</span>
+                                    <span class="event-status status-${ev.status}" style="margin:0;">${ev.status}</span>
+                                </h4>
+                                <p>${ev.venue} &bull; ${getParticipantCount(ev.id)} Active Students</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML += dayHtml + `</div>`;
+            });
+        }
+        function filterEvents(inputId, gridId) {
+            const query = document.getElementById(inputId).value.toLowerCase();
+            const filtered = db.events.filter(e => e.name.toLowerCase().includes(query) || e.category.toLowerCase().includes(query));
+            renderGrid(filtered, gridId);
+        }
+
+        // --- REGISTRATION LOGIC ---
+        function submitRegistration(e) {
+            e.preventDefault();
+            const eventId = parseInt(document.getElementById('regEventId').value);
+            const team = document.getElementById('regTeam').value.trim();
+            const regNo = document.getElementById('regNo').value;
+            const dept = document.getElementById('regDept').value;
+            const sem = document.getElementById('regSem').value;
+            const name = document.getElementById('regName').value;
+            
+            const ev = db.events.find(x => x.id === eventId);
+            if(ev && ev.status === 'Disqualified') { alert("This event has been disqualified. Registrations closed."); return; }
+
+            let participant = db.participants.find(p => p.registerNumber === regNo && p.department === dept && p.semester === sem);
+            if (!participant) {
+                const newId = db.participants.length > 0 ? Math.max(...db.participants.map(p => p.id)) + 1 : 1;
+                participant = { id: newId, name: name, registerNumber: regNo, department: dept, semester: sem, isNew: true };
+                db.participants.push(participant);
+            }
+
+            const myRegs = db.registrations.filter(r => r.participantId === participant.id && !r.disqualified);
+            const clash = myRegs.find(r => {
+                const existingEv = db.events.find(x => x.id === r.eventId);
+                return existingEv.date === ev.date && existingEv.time === ev.time;
+            });
+            if(clash) {
+                const clashEv = db.events.find(x=>x.id === clash.eventId);
+                alert(`SCHEDULE CLASH WARNING!\n\nYou are already registered for '${clashEv.name}' which occurs at exactly the same date and time (${ev.date} ${ev.time}). Registration blocked.`);
+                return;
+            }
+
+            const currentTeams = new Set(db.registrations.filter(r => r.eventId === eventId && !r.disqualified).map(r => r.team)).size;
+            let isWaitlist = false;
+            if(currentTeams >= ev.capacity) {
+                const teamExists = db.registrations.some(r => r.eventId === eventId && r.team === team && !r.disqualified);
+                if(!teamExists) {
+                    isWaitlist = true;
+                    alert(`Notice: Capacity reached (${ev.capacity} teams). Your team is placed on the WAITLIST.`);
+                }
+            }
+
+            db.registrations.push({ eventId: eventId, participantId: participant.id, team: team, disqualified: false, waitlist: isWaitlist, checkedIn: false, score: null });
+            if(currentUserRole === 'student') myStudentId = participant.id; 
+            document.getElementById('regForm').reset();
+            updateUI(); 
+            if(!isWaitlist) alert('Registration Successful!');
+        }
+
+        // --- ADMIN LOGIC ---
+        function openAddEventModal() {
+            document.getElementById('eventModalTitle').innerText = "Add New Event";
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventModId').value = ""; 
+            document.getElementById('eventModStatus').value = "Upcoming"; 
+            document.getElementById('eventDeleteBtn').style.display = "none";
+            openModal('eventModal');
+        }
+        function openEditEvent(id) {
+            const ev = db.events.find(x => x.id === id);
+            if(ev) {
+                document.getElementById('eventModalTitle').innerText = "Edit Event Details";
+                document.getElementById('eventModId').value = ev.id;
+                document.getElementById('eventModName').value = ev.name;
+                document.getElementById('eventModCat').value = ev.category;
+                document.getElementById('eventModCap').value = ev.capacity;
+                document.getElementById('eventModStatus').value = ev.status;
+                document.getElementById('eventModDate').value = ev.date;
+                document.getElementById('eventModTime').value = ev.time;
+                document.getElementById('eventModVenue').value = ev.venue;
+                document.getElementById('eventDeleteBtn').style.display = "block";
+                openModal('eventModal');
+            }
+        }
+        function submitEvent(e) {
+            e.preventDefault();
+            const idVal = document.getElementById('eventModId').value;
+            const newEv = {
+                name: document.getElementById('eventModName').value, category: document.getElementById('eventModCat').value,
+                capacity: parseInt(document.getElementById('eventModCap').value), status: document.getElementById('eventModStatus').value,
+                date: document.getElementById('eventModDate').value, time: document.getElementById('eventModTime').value,
+                venue: document.getElementById('eventModVenue').value
+            };
+            if(idVal) {
+                const ev = db.events.find(x => x.id === parseInt(idVal));
+                Object.assign(ev, newEv); alert("Event updated.");
+            } else {
+                newEv.id = db.events.length > 0 ? Math.max(...db.events.map(e => e.id)) + 1 : 1;
+                newEv.results = null; db.events.push(newEv); alert("Event created!");
+            }
+            closeModal('eventModal'); updateUI();
+        }
+        function disqualifyEvent() {
+            const idVal = parseInt(document.getElementById('eventModId').value);
+            if(confirm("Disqualify this event?")) {
+                const ev = db.events.find(x => x.id === idVal);
+                if(ev) ev.status = 'Disqualified';
+                closeModal('eventModal'); updateUI();
+            }
+        }
+        
+        function openResultsModal(eventId) {
+            const ev = db.events.find(x => x.id === eventId);
+            document.getElementById('resEventId').value = ev.id;
+            const teams = Array.from(new Set(db.registrations.filter(r => r.eventId === ev.id && !r.disqualified).map(r=>r.team)));
+            let opts = '<option value="">Select Team</option>';
+            teams.forEach(t => opts += `<option value="${t}">${t}</option>`);
+            
+            ['res1', 'res2', 'res3'].forEach(id => {
+                const el = document.getElementById(id);
+                el.innerHTML = opts;
+                if(ev.results) {
+                    if(id==='res1' && ev.results.first) el.value = ev.results.first;
+                    if(id==='res2' && ev.results.second) el.value = ev.results.second;
+                    if(id==='res3' && ev.results.third) el.value = ev.results.third;
+                }
+            });
+            openModal('resultsModal');
+        }
+        function submitResults(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('resEventId').value);
+            const ev = db.events.find(x => x.id === id);
+            ev.results = {
+                first: document.getElementById('res1').value,
+                second: document.getElementById('res2').value,
+                third: document.getElementById('res3').value
+            };
+            closeModal('resultsModal'); updateUI(); alert("Results Published! Leaderboard updated.");
+        }
+
+        // --- CSV EXPORT & TEAM CHECK-IN ---
+        function exportCSV() {
+            const eventId = document.getElementById('partEventSelect').value;
+            if(!eventId) return alert("Select an event first.");
+            const ev = db.events.find(x=>x.id == eventId);
+            const regs = db.registrations.filter(r => r.eventId == eventId);
+            
+            let csv = "Team,Roll No,Name,Department,Semester,Status,Checked In,Score\n";
+            regs.forEach(r => {
+                const p = db.participants.find(x=>x.id === r.participantId);
+                const status = r.disqualified ? 'Disqualified' : (r.waitlist ? 'Waitlist' : 'Registered');
+                csv += `"${r.team}","${p.registerNumber}","${p.name}","${p.department}","${p.semester}","${status}","${r.checkedIn?'Yes':'No'}","${r.score||''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `${ev.name}_Participants.csv`;
+            a.click();
+        }
+
+        function toggleTeamCheckIn(eventId, teamName) {
+            const regs = db.registrations.filter(r => r.eventId == eventId && r.team === teamName);
+            if(regs.length > 0) {
+                const currentState = regs[0].checkedIn;
+                regs.forEach(r => r.checkedIn = !currentState);
+                renderParticipantTable();
+            }
+        }
+
+        // --- PARTICIPANT MANAGEMENT (TEAM ACCORDIONS) ---
+        function renderParticipantTable() {
+            const eventId = document.getElementById('partEventSelect').value;
+            const container = document.getElementById('teamAccordionContainer');
+            
+            // Retain Open Accordions during re-render
+            const openStates = {};
+            container.querySelectorAll('details').forEach(d => {
+                const teamNameEl = d.querySelector('.team-name-label');
+                if(teamNameEl && d.open) {
+                    openStates[teamNameEl.innerText.trim()] = true;
+                }
+            });
+
+            if (!eventId) {
+                container.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-white); border:1px solid var(--border); border-radius:12px;">Select an event above to view registered teams.</div>';
+                document.getElementById('partCountLabel').innerText = '0 participants';
+                return;
+            }
+
+            const regs = db.registrations.filter(r => r.eventId === parseInt(eventId));
+            const enrolled = regs.map(r => {
+                const pInfo = db.participants.find(p => p.id === r.participantId);
+                return { ...pInfo, team: r.team, disqualified: r.disqualified, waitlist: r.waitlist, checkedIn: r.checkedIn, score: r.score };
+            });
+            
+            document.getElementById('partCountLabel').innerText = `${enrolled.length} participants (Total)`;
+            container.innerHTML = '';
+            
+            if (enrolled.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-muted); background:var(--bg-white); border:1px solid var(--border); border-radius:12px;">No participants found for this event.</div>';
+                return;
+            }
+
+            const groupedByTeam = enrolled.reduce((acc, p) => { (acc[p.team] = acc[p.team] || []).push(p); return acc; }, {});
+
+            Object.keys(groupedByTeam).sort().forEach(teamName => {
+                const teamMembers = groupedByTeam[teamName];
+                const isWaitlistedTeam = teamMembers.some(p => p.waitlist);
+                const isTeamCheckedIn = teamMembers.length > 0 && teamMembers.every(p => p.checkedIn);
+                
+                let teamHeaderBadge = isWaitlistedTeam ? `<span class="badge-waitlist">Waitlisted</span>` : '';
+                if(isTeamCheckedIn && !isWaitlistedTeam) {
+                    teamHeaderBadge += `<span class="badge-checked" style="margin-left:0.5rem;">Checked In</span>`;
+                }
+
+                let checkInAction = '';
+                if(currentUserRole === 'admin') {
+                    checkInAction = `<button class="btn btn-outline btn-small" style="margin-left:auto; margin-right:1rem;" onclick="event.preventDefault(); event.stopPropagation(); toggleTeamCheckIn(${eventId}, '${teamName.replace(/'/g, "\\'")}')">${isTeamCheckedIn ? 'Undo Check-in' : 'Check In Team'}</button>`;
+                }
+                
+                let tableHtml = `<table><thead><tr><th>Roll No</th><th>Name</th><th>Dept</th><th>Status</th><th style="text-align:right;">Actions</th></tr></thead><tbody>`;
+
+                teamMembers.forEach(p => {
+                    const canEdit = !p.disqualified && (p.isNew || currentUserRole === 'admin');
+                    let actionHtml = '';
+                    if(canEdit) actionHtml += `<button class="btn btn-outline btn-small" onclick="openEditParticipant(${p.id})">Edit</button>`;
+                    if(currentUserRole === 'admin' && !p.disqualified) {
+                        actionHtml += `<button class="btn btn-danger btn-small" style="margin-left:0.5rem;" onclick="disqualifyParticipant(${eventId}, ${p.id})">Disqualify</button>`;
+                    }
+
+                    const rowStyle = p.disqualified ? 'opacity: 0.6; text-decoration: line-through; background-color: var(--bg-page);' : '';
+                    let badge = '';
+                    if(p.disqualified) badge += '<span class="event-status status-Disqualified" style="text-decoration:none; display:inline-block; margin-top:0.25rem;">Disqualified</span> ';
+                    if(p.waitlist) badge += '<span class="badge-waitlist" style="text-decoration:none; display:inline-block; margin-top:0.25rem;">Waitlist</span> ';
+                    if(p.checkedIn) badge += '<span class="badge-checked" style="text-decoration:none; display:inline-block; margin-top:0.25rem;">Checked In</span> ';
+                    if(p.score !== null) badge += `<span style="font-weight:700; color:var(--primary); font-size:0.75rem; display:block; margin-top:0.25rem;">Score: ${p.score}</span>`;
+                    
+                    tableHtml += `<tr style="${rowStyle}">
+                        <td style="font-weight:600;">${p.registerNumber}</td>
+                        <td>${p.name}<br>${badge}</td>
+                        <td>${p.department}</td>
+                        <td>${p.semester}</td>
+                        <td style="text-align:right; white-space:nowrap;">${actionHtml}</td>
+                    </tr>`;
+                });
+
+                tableHtml += `</tbody></table>`;
+                
+                const isOpen = openStates[teamName] ? 'open' : '';
+
+                container.innerHTML += `
+                    <details class="team-accordion" ${isOpen}>
+                        <summary class="team-summary">
+                            <div style="display:flex; align-items:center;">
+                                <span class="team-name-label">${teamName}</span>
+                                <span style="margin-left:0.5rem;">${teamHeaderBadge}</span>
+                                <span style="font-weight:400; font-size:0.85rem; color:var(--text-muted); margin-left:0.5rem;">(${teamMembers.length} Members)</span>
+                            </div>
+                            ${checkInAction}
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <div class="team-content">${tableHtml}</div>
+                    </details>
+                `;
+            });
+        }
+
+        function openEditParticipant(id) {
+            const p = db.participants.find(x => x.id === id);
+            if(p) {
+                document.getElementById('editPartId').value = p.id;
+                document.getElementById('editName').value = p.name;
+                document.getElementById('editRegNo').value = p.registerNumber;
+                document.getElementById('editDept').value = p.department;
+                document.getElementById('editSem').value = p.semester;
+                openModal('editModal');
+            }
+        }
+
+        function submitEditParticipant(e) {
+            e.preventDefault();
+            const id = parseInt(document.getElementById('editPartId').value);
+            const p = db.participants.find(x => x.id === id);
+            if(p) {
+                p.name = document.getElementById('editName').value;
+                p.registerNumber = document.getElementById('editRegNo').value;
+                p.department = document.getElementById('editDept').value;
+                p.semester = document.getElementById('editSem').value;
+                closeModal('editModal'); renderParticipantTable(); 
+            }
+        }
+
+        function disqualifyParticipant(eventId, participantId) {
+            if(confirm("Disqualify this participant?")) {
+                const reg = db.registrations.find(r => r.eventId == eventId && r.participantId == participantId);
+                if(reg) reg.disqualified = true;
+                updateUI(); renderParticipantTable();
+            }
+        }
+
+        // --- JUDGE SCORING ---
+        function updateScoringDropdown() {
+            let opts = '<option value="">Choose an event</option>';
+            db.events.forEach(e => { opts += `<option value="${e.id}">${e.name}</option>`; });
+            document.getElementById('scoreEventSelect').innerHTML = opts;
+        }
+
+        function renderScoringTable() {
+            const eventId = document.getElementById('scoreEventSelect').value;
+            const table = document.getElementById('scoringTable');
+            const tbody = document.getElementById('scoringTableBody');
+            
+            if(!eventId) { table.style.display = 'none'; return; }
+            
+            const regs = db.registrations.filter(r => r.eventId == eventId && !r.disqualified);
+            const teams = Array.from(new Set(regs.map(r=>r.team)));
+            
+            tbody.innerHTML = '';
+            teams.forEach(t => {
+                const members = regs.filter(r=>r.team === t).length;
+                const existingScore = regs.find(r=>r.team === t).score || '';
+                
+                tbody.innerHTML += `<tr>
+                    <td style="font-weight:700;">${t}</td>
+                    <td>${members} members</td>
+                    <td><input type="number" id="score_${t.replace(/\s+/g,'_')}" value="${existingScore}" min="1" max="100" style="width:100%; padding:0.5rem; border:1px solid var(--border); border-radius:4px; outline:none;"></td>
+                    <td style="text-align:right;"><button class="btn btn-primary btn-small" onclick="saveScore('${t.replace(/'/g, "\\'")}', ${eventId})">Save</button></td>
+                </tr>`;
+            });
+            table.style.display = 'table';
+        }
+
+        function saveScore(team, eventId) {
+            const val = document.getElementById(`score_${team.replace(/\s+/g,'_')}`).value;
+            const regs = db.registrations.filter(r => r.eventId == eventId && r.team === team);
+            regs.forEach(r => r.score = val);
+            alert(`Score of ${val} saved for ${team}.`);
+        }
+
+        // --- MODAL & LOGIN LOGIC ---
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        
+        function submitLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('loginId').value.trim().toLowerCase();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if (user && pass && (user==='admin' || user==='student' || user==='judge')) { 
+                currentUserRole = user; 
+                currentUserName = user.charAt(0).toUpperCase() + user.slice(1);
+                
+                if(user === 'student') myStudentId = 1; 
+
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'inline-flex';
+                const greeting = document.getElementById('userGreeting');
+                greeting.style.display = 'block'; greeting.innerText = `Role: ${currentUserName}`;
+                
+                closeModal('loginModal');
+                document.getElementById('loginId').value = ''; document.getElementById('loginPass').value = '';
+                
+                if(user === 'judge') navigate('scoring');
+                else navigate('home');
+            } else {
+                alert("For this prototype, please use 'admin', 'student', or 'judge' as the username and password.");
+            }
+        }
+
+        function logout() {
+            currentUserRole = null; currentUserName = null; myStudentId = null;
+            document.getElementById('userGreeting').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('loginBtn').style.display = 'inline-flex';
+            navigate('home'); 
+        }
+
+        // --- INITIALIZE ---
+        updateUI();
+        updateTicker();
+        renderComments();
+
+    </script>
+</body>
+</html>
